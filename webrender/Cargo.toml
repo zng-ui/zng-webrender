@@ -1,6 +1,6 @@
 [package]
 name = "zng-webrender"
-version = "0.64.0"
+version = "0.64.1"
 authors = ["Glenn Watson <gw@intuitionlibrary.com>"]
 license = "MPL-2.0"
 repository = "https://github.com/zng-ui/zng-webrender"
@@ -52,7 +52,7 @@ tracy-rs = "0.1.2"
 derive_more = { version = "0.99", default-features = false, features = ["add_assign"] }
 peek-poke = { version = "0.3.2", path = "../peek-poke", package = "zng-peek-poke" }
 etagere = "0.2.13"
-swgl = { path = "../swgl", optional = true, version = "0.3.0", package = "zng-swgl" }
+swgl = { path = "../swgl", optional = true, version = "0.3.1", package = "zng-swgl" }
 topological-sort = "0.1"
 allocator-api2 = { version = "0.2.18", features = ["alloc", "serde"] }
 
