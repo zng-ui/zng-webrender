@@ -86,8 +86,6 @@ fn translate_shader(shader_key: &str, shader_dir: &str) {
             build.flag("-xc").flag("-P").flag("-undef");
         }
     }
-    // Use SWGLPP target to avoid pulling CFLAGS/CXXFLAGS.
-    build.target("SWGLPP");
     build.file(&imp_name);
     let vs = build.clone()
         .define("WR_VERTEX_SHADER", Some("1"))
