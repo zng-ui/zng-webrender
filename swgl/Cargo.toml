@@ -1,19 +1,16 @@
 [package]
 name = "zng-swgl"
-version = "0.3.1"
+version = "0.4.0"
 license = "MPL-2.0"
 authors = ["The Mozilla Project Developers"]
 build = "build.rs"
 description = "Software OpenGL implementation for WebRender."
 repository = "https://github.com/zng-ui/zng-webrender"
-readme = "../FORK.md"
-
-include = ["**"]
 
 [build-dependencies]
 cc = "1.0.92"
-glsl-to-cxx = { path = "../glsl-to-cxx", version = "0.1.1", package = "zng-glsl-to-cxx" }
-webrender-build = { path = "../webrender_build", version = "0.0.4", package = "zng-webrender-build" }
+glsl-to-cxx = { path = "../glsl-to-cxx", version = "0.2.0", package = "zng-glsl-to-cxx" }
+webrender-build = { path = "../webrender_build", version = "0.0.5", package = "zng-webrender-build" }
 
 [dependencies]
-gleam = "0.15"
+gleam = { workspace = true }

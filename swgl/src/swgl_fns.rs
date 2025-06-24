@@ -265,7 +265,7 @@ extern "C" {
     fn LockFramebuffer(fbo: GLuint) -> *mut LockedTexture;
     fn LockTexture(tex: GLuint) -> *mut LockedTexture;
     fn LockResource(resource: *mut LockedTexture);
-    fn UnlockResource(resource: *mut LockedTexture);
+    fn UnlockResource(resource: *mut LockedTexture) -> i32;
     fn GetResourceBuffer(
         resource: *mut LockedTexture,
         width: *mut i32,
@@ -313,6 +313,10 @@ extern "C" {
         clip_y: GLint,
         clip_width: GLsizei,
         clip_height: GLsizei,
+    );
+    fn ApplyMask(
+        locked_dst: *mut LockedTexture,
+        locked_mask: *mut LockedTexture,
     );
     fn CreateContext() -> *mut c_void;
     fn ReferenceContext(ctx: *mut c_void);
@@ -2455,6 +2459,19 @@ impl LockedResource {
                 clip_y,
                 clip_width,
                 clip_height,
+            );
+        }
+    }
+
+    /// Apply an R8 alpha mask to this surface
+    pub fn apply_mask(
+        &self,
+        mask: &LockedResource,
+    ) {
+        unsafe {
+            ApplyMask(
+                self.0,
+                mask.0,
             );
         }
     }

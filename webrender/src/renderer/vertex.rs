@@ -19,7 +19,7 @@ use crate::{
     render_task::RenderTaskData,
 };
 
-use crate::internal_types::{FrameVec};
+use crate::internal_types::FrameVec;
 
 pub const VERTEX_TEXTURE_EXTRA_ROWS: i32 = 10;
 
@@ -774,6 +774,16 @@ pub mod desc {
             VertexAttribute {
                 name: "aFlip",
                 count: 2,
+                kind: VertexAttributeKind::F32,
+            },
+            VertexAttribute {
+                name: "aDeviceRoundedClipRect",
+                count: 4,
+                kind: VertexAttributeKind::F32,
+            },
+            VertexAttribute {
+                name: "aDeviceRoundedClipRadii",
+                count: 4,
                 kind: VertexAttributeKind::F32,
             },
         ],

@@ -1,37 +1,35 @@
 [package]
 name = "zng-wr-glyph-rasterizer"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["The Mozilla Project Developers"]
 description = "A glyph rasterizer for WebRender"
 license = "MPL-2.0"
 edition = "2018"
-repository = "https://github.com/zng-ui/zng-webrender"
-readme = "../FORK.md"
 
 [features]
 default = ["static_freetype"]
 dynamic_freetype = []
 static_freetype = ["freetype/freetype-sys"]
-capture = ["api/serialize", "dep:serde", "smallvec/serde"]
-replay = ["api/deserialize", "dep:serde", "smallvec/serde"]
+capture = ["api/serialize", "serde", "smallvec/serde"]
+replay = ["api/deserialize", "serde", "smallvec/serde"]
 
 [dependencies]
-api = { version = "0.64.0", path = "../webrender_api", package = "zng-webrender-api" }
+api = { version = "0.65.0", path = "../webrender_api", package = "zng-webrender-api" }
 euclid = { version = "0.22.0", features = ["serde"] }
-malloc_size_of = { version = "0.0.3", path = "../wr_malloc_size_of", package = "zng-wr-malloc-size-of" }
+malloc_size_of = { version = "0.2.0", path = "../wr_malloc_size_of", package = "zng-wr-malloc-size-of" }
 malloc_size_of_derive = "0.1"
-rayon = "1.10"
-smallvec = "1.13"
+rayon = "1"
+smallvec = "1"
 tracy-rs = "0.1.2"
 log = "0.4"
-lazy_static = "1.4"
+lazy_static = "1"
 fxhash = "0.2.1"
 serde = { optional = true, version = "1.0", features = ["serde_derive"] }
 
 [dev-dependencies]
 env_logger = { version = "0.10", default-features = false }
 euclid = "0.22"
-gleam = "0.15"
+gleam = { workspace = true }
 glutin = "0.28"
 rayon = "1"
 winit = "0.26"

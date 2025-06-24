@@ -1,17 +1,16 @@
 [package]
 name = "zng-webrender-build"
 authors = ["The Servo Project Developers"]
-version = "0.0.4"
+version = "0.0.5"
 license = "MPL-2.0"
 repository = "https://github.com/zng-ui/zng-webrender"
 description = "Code shared between precompilation (build.rs) and the rest of WebRender"
 edition = "2018"
-readme = "../FORK.md"
 
 [features]
 serialize_program = ["serde"]
 
 [dependencies]
 bitflags = "2"
-lazy_static = "1.4"
+lazy_static = "1"
 serde = { optional = true, version = "1.0", features = ["serde_derive"] }

@@ -9,6 +9,7 @@ use api::units::*;
 use api::channel::unbounded_channel;
 pub use api::DebugFlags;
 
+use crate::bump_allocator::ChunkPool;
 use crate::render_api::{RenderApiSender, FrameMsg};
 use crate::composite::{CompositorKind, CompositorConfig};
 use crate::device::{
@@ -75,7 +76,7 @@ pub trait SceneBuilderHooks {
     /// This is called after each scene swap occurs. The PipelineInfo contains
     /// the updated epochs and pipelines removed in the new scene compared to
     /// the old scene.
-    fn post_scene_swap(&self, document_id: &Vec<DocumentId>, info: PipelineInfo);
+    fn post_scene_swap(&self, document_id: &Vec<DocumentId>, info: PipelineInfo, schedule_frame: bool);
     /// This is called after a resource update operation on the scene builder
     /// thread, in the case where resource updates were applied without a scene
     /// build.
@@ -134,6 +135,10 @@ pub struct WebRenderOptions {
     pub upload_pbo_default_size: usize,
     pub batched_upload_threshold: i32,
     pub workers: Option<Arc<ThreadPool>>,
+    /// A pool of large memory chunks used by the per-frame allocators.
+    /// Providing the pool here makes it possible to share a single pool for
+    /// all WebRender instances.
+    pub chunk_pool: Option<Arc<ChunkPool>>,
     pub dedicated_glyph_raster_thread: Option<GlyphRasterThread>,
     pub enable_multithreading: bool,
     pub blob_image_handler: Option<Box<dyn BlobImageHandler>>,
@@ -234,6 +239,7 @@ impl Default for WebRenderOptions {
             upload_pbo_default_size: 512 * 512 * 4,
             batched_upload_threshold: 512 * 512,
             workers: None,
+            chunk_pool: None,
             dedicated_glyph_raster_thread: None,
             enable_multithreading: true,
             blob_image_handler: None,
@@ -311,6 +317,15 @@ pub fn create_webrender_instance(
 
     HAS_BEEN_INITIALIZED.store(true, Ordering::SeqCst);
 
+    // For now, we assume that native OS compositors are top-left origin. If that doesn't
+    // turn out to be the case, we can add a query method on `LayerCompositor`.
+    match options.compositor_config {
+        CompositorConfig::Draw { .. } | CompositorConfig::Native { .. } => {}
+        CompositorConfig::Layer { .. } => {
+            options.surface_origin_is_top_left = true;
+        }
+    }
+
     let (api_tx, api_rx) = unbounded_channel();
     let (result_tx, result_rx) = unbounded_channel();
     let gl_type = gl.get_type();
@@ -376,7 +391,14 @@ pub fn create_webrender_instance(
 
     let shaders = match shaders {
         Some(shaders) => Rc::clone(shaders),
-        None => Rc::new(RefCell::new(Shaders::new(&mut device, gl_type, &options)?)),
+        None => {
+            let mut shaders = Shaders::new(&mut device, gl_type, &options)?;
+            if options.precache_flags.intersects(ShaderPrecacheFlags::ASYNC_COMPILE | ShaderPrecacheFlags::FULL_COMPILE) {
+                let mut pending_shaders = shaders.precache_all(options.precache_flags);
+                while shaders.resume_precache(&mut device, &mut pending_shaders)? {}
+            }
+            Rc::new(RefCell::new(shaders))
+        }
     };
 
     let dither_matrix_texture = if options.enable_dithering {
@@ -521,6 +543,10 @@ pub fn create_webrender_instance(
                 capabilities,
             }
         }
+        CompositorConfig::Layer { .. } => {
+            CompositorKind::Layer {
+            }
+        }
     };
 
     let config = FrameBuilderConfig {
@@ -653,6 +679,10 @@ pub fn create_webrender_instance(
 
     let render_backend_hooks = options.render_backend_hooks.take();
 
+    let chunk_pool = options.chunk_pool.take().unwrap_or_else(|| {
+        Arc::new(ChunkPool::new())
+    });
+
     let rb_scene_tx = scene_tx.clone();
     let rb_fonts = fonts.clone();
     let enable_multithreading = options.enable_multithreading;
@@ -694,6 +724,7 @@ pub fn create_webrender_instance(
             result_tx,
             rb_scene_tx,
             resource_cache,
+            chunk_pool,
             backend_notifier,
             config,
             sampler,

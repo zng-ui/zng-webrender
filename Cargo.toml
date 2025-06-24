@@ -1,14 +1,13 @@
 [workspace]
 members = [
-    "examples",
     "webrender",
     "webrender_api",
-    "wrench",
-    "example-compositor/compositor",
 ]
+resolver = "2"
 
 [workspace.dependencies]
-glean = "=61.0.0"
+gleam = "0.15.1"
+glean = "=64.4.0"
 
 [profile.release]
 debug = true
@@ -23,8 +22,3 @@ opt-level = 2
 
 [profile.release.package.glsl]
 opt-level = 2
-
-[patch.crates-io]
-firefox-on-glean = { path = "fog" }
-# use a patched version of glutin that works on android
-glutin = { version = "0.28", git = "https://github.com/jamienicol/glutin", branch="wr" }

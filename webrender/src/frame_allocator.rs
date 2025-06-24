@@ -9,9 +9,9 @@
 
 use allocator_api2::alloc::{Allocator, AllocError, Layout, Global};
 
-use std::{cell::UnsafeCell, ptr::NonNull, sync::atomic::{AtomicI32, Ordering}};
+use std::{cell::UnsafeCell, ptr::NonNull, sync::{atomic::{AtomicI32, Ordering}, Arc}};
 
-use crate::{bump_allocator::{BumpAllocator, Stats}, internal_types::{FrameId, FrameVec}};
+use crate::{bump_allocator::{BumpAllocator, ChunkPool, Stats}, internal_types::{FrameId, FrameVec}};
 
 /// A memory allocator for allocations that have the same lifetime as a built frame.
 ///
@@ -58,13 +58,13 @@ impl FrameAllocator {
     /// Creates a `FrameAllocator` that defaults to the global allocator.
     ///
     /// Should only be used for testing purposes or desrialization in wrench replays.
-	pub fn fallback() -> Self {
-		FrameAllocator {
-			inner: std::ptr::null_mut(),
+    pub fn fallback() -> Self {
+        FrameAllocator {
+            inner: std::ptr::null_mut(),
             #[cfg(debug_assertions)]
             frame_id: None,
         }
-	}
+    }
 
     /// Shorthand for creating a FrameVec.
     #[inline]
@@ -139,7 +139,7 @@ impl Clone for FrameAllocator {
         unsafe {
             if let Some(inner) = self.inner.as_mut() {
                 // When cloning a `FrameAllocator`, we have to decrement the
-                // counter of dropped references in the nner allocator to
+                // counter of dropped references in the inner allocator to
                 // balance the fact that an extra `FrameAllocator` will be
                 // dropped (that hasn't been accounted in `FrameMemory`).
                 inner.references_dropped.fetch_sub(1, Ordering::Relaxed);
@@ -158,7 +158,7 @@ impl Drop for FrameAllocator {
     fn drop(&mut self) {
         unsafe {
             if let Some(inner) = self.inner.as_mut() {
-                inner.references_dropped.fetch_add(1, Ordering::Release);
+                inner.references_dropped.fetch_add(1, Ordering::Relaxed);
             }
         }
     }
@@ -168,7 +168,7 @@ unsafe impl Send for FrameAllocator {}
 
 unsafe impl Allocator for FrameAllocator {
     #[inline(never)]
-	fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
+    fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
         if self.inner.is_null() {
             return FrameAllocator::allocate_fallback(layout);
         }
@@ -176,7 +176,7 @@ unsafe impl Allocator for FrameAllocator {
         self.check_frame_id();
 
         FrameAllocator::allocate_impl(self.inner, layout)
-	}
+    }
 
     #[inline(never)]
     unsafe fn deallocate(&self, ptr: NonNull<u8>, layout: Layout) {
@@ -224,11 +224,11 @@ unsafe impl Allocator for FrameAllocator {
 
 #[cfg(feature = "capture")]
 impl serde::Serialize for FrameAllocator {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where S: serde::Serializer
-	{
-		().serialize(serializer)
-	}
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where S: serde::Serializer
+    {
+        ().serialize(serializer)
+    }
 }
 
 #[cfg(feature = "replay")]
@@ -237,8 +237,8 @@ impl<'de> serde::Deserialize<'de> for FrameAllocator {
     where
         D: serde::Deserializer<'de>,
     {
-		let _ = <() as serde::Deserialize>::deserialize(deserializer)?;
-		Ok(FrameAllocator::fallback())
+        let _ = <() as serde::Deserialize>::deserialize(deserializer)?;
+        Ok(FrameAllocator::fallback())
     }
 }
 
@@ -296,7 +296,7 @@ impl FrameMemory {
     /// A `FrameMemory` must not be dropped until all of the associated
     /// `FrameAllocators` as well as their allocations have been dropped,
     /// otherwise the `FrameMemory::drop` will panic.
-    pub fn new() -> Self {
+    pub fn new(pool: Arc<ChunkPool>, _frame_id: FrameId) -> Self {
         let layout = Layout::from_size_align(
             std::mem::size_of::<FrameInnerAllocator>(),
             std::mem::align_of::<FrameInnerAllocator>(),
@@ -307,12 +307,12 @@ impl FrameMemory {
         unsafe {
             let allocator: NonNull<FrameInnerAllocator> = uninit_u8.cast();
             allocator.as_ptr().write(FrameInnerAllocator {
-                bump: BumpAllocator::new_in(Global),
+                bump: BumpAllocator::new(pool),
 
                 live_alloc_count: AtomicI32::new(0),
                 references_dropped: AtomicI32::new(0),
                 #[cfg(debug_assertions)]
-                frame_id: None,
+                frame_id: Some(_frame_id),
             });
 
             FrameMemory {
@@ -348,7 +348,7 @@ impl FrameMemory {
     pub fn new_vec_with_capacity<T>(&self, cap: usize) -> FrameVec<T> {
         FrameVec::with_capacity_in(cap, self.allocator())
     }
-    
+
     /// Panics if there are still live allocations or `FrameAllocator`s.
     pub fn assert_memory_reusable(&self) {
         if let Some(ptr) = self.allocator {
@@ -359,23 +359,6 @@ impl FrameMemory {
                 // from the previous frame are still alive.
                 let references_created = *self.references_created.get();
                 assert_eq!(ptr.as_ref().references_dropped.load(Ordering::Acquire), references_created);
-            }
-        }
-    }
-
-    /// Must be called at the beginning of each frame before creating any `FrameAllocator`.
-    pub fn begin_frame(&mut self, id: FrameId) {
-        self.assert_memory_reusable();
-
-        if let Some(mut ptr) = self.allocator {
-            unsafe {
-                let allocator = ptr.as_mut();
-                allocator.references_dropped.store(0, Ordering::Release);
-                self.references_created = UnsafeCell::new(0);
-
-                allocator.bump.reset_stats();
-
-                allocator.set_frame_id(id);
             }
         }
     }
@@ -407,11 +390,11 @@ unsafe impl Send for FrameMemory {}
 
 #[cfg(feature = "capture")]
 impl serde::Serialize for FrameMemory {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where S: serde::Serializer
-	{
-		().serialize(serializer)
-	}
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where S: serde::Serializer
+    {
+        ().serialize(serializer)
+    }
 }
 
 #[cfg(feature = "replay")]
@@ -420,13 +403,13 @@ impl<'de> serde::Deserialize<'de> for FrameMemory {
     where
         D: serde::Deserializer<'de>,
     {
-		let _ = <() as serde::Deserialize>::deserialize(deserializer)?;
-		Ok(FrameMemory::fallback())
+        let _ = <() as serde::Deserialize>::deserialize(deserializer)?;
+        Ok(FrameMemory::fallback())
     }
 }
 
 struct FrameInnerAllocator {
-    bump: BumpAllocator<Global>,
+    bump: BumpAllocator,
 
     // Strictly speaking the live allocation and reference count do not need to
     // be atomic if the allocator is used correctly (the thread that
@@ -449,12 +432,44 @@ struct FrameInnerAllocator {
     frame_id: Option<FrameId>,
 }
 
-impl FrameInnerAllocator {
-    #[cfg(not(debug_assertions))]
-    fn set_frame_id(&mut self, _: FrameId) {}
+#[test]
+fn frame_memory_simple() {
+    use std::sync::mpsc::channel;
 
-    #[cfg(debug_assertions)]
-    fn set_frame_id(&mut self, id: FrameId) {
-        self.frame_id = Some(id);
+    let chunk_pool = Arc::new(ChunkPool::new());
+    let memory = FrameMemory::new(chunk_pool, FrameId::first());
+
+    let alloc = memory.allocator();
+    let a2 = memory.allocator();
+    let a3 = memory.allocator();
+    let v1: FrameVec<u32> = memory.new_vec_with_capacity(10);
+    let v2: FrameVec<u32> = memory.new_vec_with_capacity(256);
+    let v3: FrameVec<u32> = memory.new_vec_with_capacity(1024 * 128);
+    let v4: FrameVec<u32> = memory.new_vec_with_capacity(128);
+    let mut v5 = alloc.clone().new_vec();
+    for i in 0..256u32 {
+        v5.push(i);
     }
+    let v6 = v2.clone().clone().clone().clone();
+    let mut frame = alloc.new_vec();
+    frame.push(v1);
+    frame.push(v2);
+    frame.push(v3);
+    frame.push(v4);
+    frame.push(v5);
+    frame.push(v6);
+    let (tx, rx) = channel();
+    tx.send(frame).unwrap();
+
+    let handle = std::thread::spawn(move || {
+        let mut frame = rx.recv().unwrap();
+        frame.push(memory.new_vec_with_capacity(10));
+        std::mem::drop(a3);
+        std::mem::drop(a2);
+        std::mem::drop(frame);
+
+        memory.assert_memory_reusable();
+    });
+
+    handle.join().unwrap();
 }
