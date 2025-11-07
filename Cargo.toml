@@ -1,8 +1,7 @@
 [workspace]
 members = [
-    "examples",
-    "zng-webrender",
-    "zng-webrender-api",
+    "webrender",
+    "webrender_api",
 ]
 resolver = "2"
 
