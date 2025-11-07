@@ -1,10 +1,8 @@
 [workspace]
 members = [
     "examples",
-    "webrender",
-    "webrender_api",
-    "wrench",
-    "example-compositor/compositor",
+    "zng-webrender",
+    "zng-webrender-api",
 ]
 resolver = "2"
 
@@ -26,8 +24,3 @@ opt-level = 2
 [profile.release.package.glsl]
 opt-level = 2
 
-[patch.crates-io]
-firefox-on-glean = { path = "fog" }
-# use a patched version of glutin that works on android
-glutin = { version = "0.28", git = "https://github.com/jamienicol/glutin", branch="wr" }
-wr_malloc_size_of = { path = "wr_malloc_size_of" }
