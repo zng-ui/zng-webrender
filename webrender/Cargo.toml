@@ -55,7 +55,7 @@ derive_more = { version = "2", features = ["add_assign"] }
 etagere = "0.2.13"
 glean = { workspace = true, optional = true }
 firefox-on-glean = { version = "0.1.0", optional = true }
-swgl = { path = "../swgl", package = "zng-swgl", optional = true }
+swgl = { path = "../swgl", package = "zng-swgl", version = "0.5", optional = true }
 topological-sort = "0.1"
 peek-poke = { version = "0.5", path = "../peek-poke", package = "zng-peek-poke" }
 allocator-api2 = { version = "0.2.18", features = ["alloc", "serde"] }

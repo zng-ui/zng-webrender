@@ -9,8 +9,8 @@ readme = "../FORK.md"
 
 [build-dependencies]
 cc = "1.0.46"
-glsl-to-cxx = { path = "../glsl-to-cxx", package = "zng-glsl-to-cxx" }
-webrender_build = { path = "../webrender_build", package = "zng-webrender-build" }
+glsl-to-cxx = { path = "../glsl-to-cxx", version = "0.3", package = "zng-glsl-to-cxx" }
+webrender_build = { path = "../webrender_build", version = "0.0.6", package = "zng-webrender-build" }
 
 [dependencies]
 gleam = { workspace = true }
