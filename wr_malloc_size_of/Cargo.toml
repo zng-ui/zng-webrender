@@ -1,8 +1,8 @@
 [package]
 authors = ["The Servo Project Developers"]
 description = "Internal utility to measure memory usage in WebRender."
-name = "wr_malloc_size_of"
-version = "0.2.2"
+name = "zng-wr-malloc-size-of"
+version = "0.3.0"
 license = "MIT OR Apache-2.0"
 edition = "2018"
 

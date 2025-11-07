@@ -1,6 +1,6 @@
 [package]
-name = "swgl"
-version = "0.1.0"
+name = "zng-swgl"
+version = "0.5.0"
 license = "MPL-2.0"
 authors = ["The Mozilla Project Developers"]
 build = "build.rs"
