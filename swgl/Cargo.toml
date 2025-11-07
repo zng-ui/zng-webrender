@@ -5,6 +5,7 @@ license = "MPL-2.0"
 authors = ["The Mozilla Project Developers"]
 build = "build.rs"
 description = "Software OpenGL implementation for WebRender."
+readme = "../FORK.md"
 
 [build-dependencies]
 cc = "1.0.46"
