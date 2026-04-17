@@ -2,7 +2,7 @@
 authors = ["The Servo Project Developers"]
 description = "Internal utility to measure memory usage in WebRender."
 name = "zng-wr-malloc-size-of"
-version = "0.3.0"
+version = "0.3.1"
 license = "MIT OR Apache-2.0"
 edition = "2018"
 readme = "../FORK.md"

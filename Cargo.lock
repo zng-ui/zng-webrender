@@ -3249,14 +3249,14 @@ dependencies = [
 
 [[package]]
 name = "zng-glsl-to-cxx"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "glsl",
 ]
 
 [[package]]
 name = "zng-peek-poke"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "euclid",
  "zng-peek-poke-derive",
@@ -3264,7 +3264,7 @@ dependencies = [
 
 [[package]]
 name = "zng-peek-poke-derive"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3274,7 +3274,7 @@ dependencies = [
 
 [[package]]
 name = "zng-swgl"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "cc",
  "gleam",
@@ -3284,7 +3284,7 @@ dependencies = [
 
 [[package]]
 name = "zng-webrender"
-version = "0.66.0"
+version = "0.66.1"
 dependencies = [
  "allocator-api2",
  "base64",
@@ -3331,7 +3331,7 @@ dependencies = [
 
 [[package]]
 name = "zng-webrender-api"
-version = "0.66.0"
+version = "0.66.1"
 dependencies = [
  "app_units",
  "bitflags 2.10.0",
@@ -3349,7 +3349,7 @@ dependencies = [
 
 [[package]]
 name = "zng-webrender-build"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "bitflags 2.10.0",
  "lazy_static",
@@ -3358,7 +3358,7 @@ dependencies = [
 
 [[package]]
 name = "zng-wr-glyph-rasterizer"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "core-foundation 0.9.4",
  "core-graphics 0.23.2",
@@ -3388,7 +3388,7 @@ dependencies = [
 
 [[package]]
 name = "zng-wr-malloc-size-of"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "app_units",
  "euclid",
