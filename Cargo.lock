@@ -486,7 +486,7 @@ dependencies = [
  "compositor-wayland",
  "compositor-windows",
  "gleam",
- "webrender",
+ "zng-webrender",
 ]
 
 [[package]]
@@ -3495,52 +3495,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "webrender"
-version = "0.68.0"
-dependencies = [
- "allocator-api2",
- "base64",
- "bincode",
- "bitflags 2.4.2",
- "build-parallel",
- "byteorder",
- "derive_more 2.0.1",
- "etagere",
- "euclid",
- "firefox-on-glean",
- "gleam",
- "glean",
- "glslopt",
- "lazy_static",
- "log",
- "malloc_size_of_derive",
- "mozangle",
- "num-traits",
- "peek-poke",
- "plane-split",
- "png",
- "rand 0.4.6",
- "rayon",
- "ron",
- "rustc-hash 2.1.1",
- "serde",
- "serde_json",
- "sha1",
- "smallvec",
- "svg_fmt",
- "swgl",
- "tiny_http",
- "topological-sort",
- "tracy-rs",
- "url",
- "webrender_api",
- "webrender_build",
- "wr_glyph_rasterizer",
- "wr_malloc_size_of",
- "zeitstempel",
-]
-
-[[package]]
 name = "webrender-examples"
 version = "0.1.0"
 dependencies = [
@@ -3551,8 +3505,8 @@ dependencies = [
  "gleam",
  "glutin",
  "rayon",
- "webrender",
  "winit",
+ "zng-webrender",
 ]
 
 [[package]]
@@ -3927,10 +3881,10 @@ dependencies = [
  "serde_json",
  "swgl",
  "tracy-rs",
- "webrender",
  "webrender_build",
  "winit",
  "yaml-rust2",
+ "zng-webrender",
 ]
 
 [[package]]
@@ -4079,4 +4033,50 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.100",
+]
+
+[[package]]
+name = "zng-webrender"
+version = "0.68.1"
+dependencies = [
+ "allocator-api2",
+ "base64",
+ "bincode",
+ "bitflags 2.4.2",
+ "build-parallel",
+ "byteorder",
+ "derive_more 2.0.1",
+ "etagere",
+ "euclid",
+ "firefox-on-glean",
+ "gleam",
+ "glean",
+ "glslopt",
+ "lazy_static",
+ "log",
+ "malloc_size_of_derive",
+ "mozangle",
+ "num-traits",
+ "peek-poke",
+ "plane-split",
+ "png",
+ "rand 0.4.6",
+ "rayon",
+ "ron",
+ "rustc-hash 2.1.1",
+ "serde",
+ "serde_json",
+ "sha1",
+ "smallvec",
+ "svg_fmt",
+ "swgl",
+ "tiny_http",
+ "topological-sort",
+ "tracy-rs",
+ "url",
+ "webrender_api",
+ "webrender_build",
+ "wr_glyph_rasterizer",
+ "wr_malloc_size_of",
+ "zeitstempel",
 ]

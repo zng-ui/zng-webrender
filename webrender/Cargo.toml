@@ -1,12 +1,13 @@
 [package]
-name = "webrender"
-version.workspace = true
+name = "zng-webrender"
+version = "0.68.1"
 authors = ["Glenn Watson <gw@intuitionlibrary.com>"]
 license = "MPL-2.0"
 repository = "https://github.com/servo/webrender"
 description = "A GPU accelerated 2D renderer for web content"
 build = "build.rs"
 edition = "2018"
+readme = "../FORK.md"
 
 [features]
 default = ["static_freetype"]
