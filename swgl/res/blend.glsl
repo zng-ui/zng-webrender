@@ -227,12 +227,13 @@ void CalculateFilter(
             color = color_offset.rgb;
             alpha = color_offset.a;
             break;
-        default:
+        default: {
             // Color matrix type filters (sepia, hue-rotate, etc...)
             vec4 result = color_mat * vec4(color, alpha) + color_offset;
             result = clamp(result, vec4(0.0), vec4(1.0));
             color = result.rgb;
             alpha = result.a;
+        }
     }
 }
 #endif
