@@ -339,7 +339,7 @@ pub struct GpuCacheUpdateList {
     /// to GPU memory.
     pub blocks: Vec<GpuBlockData>,
     /// Whole state GPU block metadata for debugging.
-    #[cfg_attr(feature = "serde", serde(skip))]
+    #[cfg_attr(any(feature = "capture", feature = "replay"), serde(skip))]
     pub debug_commands: Vec<GpuCacheDebugCmd>,
 }
 
@@ -446,11 +446,11 @@ struct Texture {
     allocated_block_count: usize,
     // The stamp at which we first reached our threshold for reclaiming `GpuCache`
     // memory, or `None` if the threshold hasn't been reached.
-    #[cfg_attr(feature = "serde", serde(skip))]
+    #[cfg_attr(any(feature = "capture", feature = "replay"), serde(skip))]
     reached_reclaim_threshold: Option<Instant>,
     // List of debug commands to be sent to the renderer when the GPU cache
     // debug display is enabled.
-    #[cfg_attr(feature = "serde", serde(skip))]
+    #[cfg_attr(any(feature = "capture", feature = "replay"), serde(skip))]
     debug_commands: Vec<GpuCacheDebugCmd>,
     // The current debug flags for the system.
     debug_flags: DebugFlags,
