@@ -1,6 +1,6 @@
 [package]
 name = "zng-webrender"
-version = "0.68.3"
+version = "0.68.4"
 authors = ["Glenn Watson <gw@intuitionlibrary.com>"]
 license = "MPL-2.0"
 repository = "https://github.com/servo/webrender"
@@ -10,7 +10,7 @@ edition = "2018"
 readme = "../FORK.md"
 
 [features]
-default = ["static_freetype"]
+default = ["static_freetype", "optimized_shaders"]
 profiler = ["tracy-rs/enable_profiler"]
 capture = ["api/serialize", "ron", "serde", "smallvec/serde", "etagere/serialization", "glyph_rasterizer/capture"]
 replay = ["api/deserialize", "ron", "serde", "smallvec/serde", "etagere/serialization", "glyph_rasterizer/replay"]
@@ -22,6 +22,14 @@ leak_checks = []
 gecko = ["firefox-on-glean", "glean", "glyph_rasterizer/gecko"]
 sw_compositor = ["swgl"]
 debugger = ["tiny_http", "serde_json", "url", "sha1", "base64", "api/debugger"]
+
+# Compile with optimized shaders source code.
+# 
+# When built with this and running with `use_optimized_shaders: true` the shaders will
+# compile slightly faster on first usage. Compiled shaders performance is similar.
+# 
+# Adds up to 1.8MB to the executable.
+optimized_shaders = []
 
 [build-dependencies]
 build-parallel = "0.1.2"
