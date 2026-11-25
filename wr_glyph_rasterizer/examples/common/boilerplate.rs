@@ -6,7 +6,7 @@ use api::ImageFormat;
 use euclid::{Transform3D, UnknownUnit};
 use gleam::gl;
 use glutin::display::GlDisplay;
-use wr_glyph_rasterizer::{RasterizedGlyph, GlyphFormat};
+use zng_wr_glyph_rasterizer::{RasterizedGlyph, GlyphFormat};
 
 use std::{ffi::{CStr, CString}, rc::Rc};
 

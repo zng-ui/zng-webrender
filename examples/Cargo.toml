@@ -61,7 +61,7 @@ gleam = { workspace = true }
 glutin = { version = "0.32", default-features = false }
 glutin-winit = "0.5"
 rayon = "1"
-webrender = { path = "../webrender" }
+webrender = { path = "../webrender", package = "zng-webrender" }
 winit = "0.30"
 
 [target.'cfg(target_os = "macos")'.dependencies]

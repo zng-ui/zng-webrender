@@ -23,8 +23,8 @@ use winit::dpi::PhysicalSize;
 use winit::event::{WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
-use wr_glyph_rasterizer::RasterizedGlyph;
-use wr_glyph_rasterizer::{
+use zng_wr_glyph_rasterizer::RasterizedGlyph;
+use zng_wr_glyph_rasterizer::{
     SharedFontResources, BaseFontInstance, GlyphRasterizer, FontInstance, GlyphKey,
     SubpixelDirection, profiler::GlyphRasterizeProfiler,
 };

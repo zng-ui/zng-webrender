@@ -1,10 +1,11 @@
 [package]
-name = "glsl-to-cxx"
+name = "zng-glsl-to-cxx"
 version.workspace = true
 description = "A translator from GLSL to vectorized C++."
 license = "MPL-2.0"
 authors = ["The Mozilla Project Developers", "Dimitri Sabadie"]
 edition = "2018"
+readme = "../FORK.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
