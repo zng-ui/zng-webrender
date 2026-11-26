@@ -2031,6 +2031,9 @@ void TexParameteri(GLenum target, GLenum pname, GLint param) {
 
 typedef Texture LockedTexture;
 
+// similar idea as https://doc.rust-lang.org/src/alloc/sync.rs.html#274-277
+#define MAX_REFCOUNT (INT32_MAX / 2)
+
 // Lock the given texture to prevent modification.
 LockedTexture* LockTexture(GLuint texId) {
   Texture& tex = ctx->textures[texId];
@@ -2038,7 +2041,14 @@ LockedTexture* LockTexture(GLuint texId) {
     assert(tex.buf != nullptr);
     return nullptr;
   }
-  if (__sync_fetch_and_add(&tex.locked, 1) == 0) {
+
+  int32_t old_count = __sync_fetch_and_add(&tex.locked, 1);
+
+  if (old_count > MAX_REFCOUNT) {
+    abort();
+  }
+
+  if (old_count == 0) {
     // If this is the first time locking the texture, flush any delayed clears.
     prepare_texture(tex);
   }
@@ -2061,7 +2071,11 @@ void LockResource(LockedTexture* resource) {
   if (!resource) {
     return;
   }
-  __sync_fetch_and_add(&resource->locked, 1);
+  int32_t old_count = __sync_fetch_and_add(&resource->locked, 1);
+
+  if (old_count > MAX_REFCOUNT) {
+    abort();
+  }
 }
 
 // Remove a lock on a texture that has been previously locked
