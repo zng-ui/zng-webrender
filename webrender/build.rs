@@ -158,10 +158,14 @@ fn write_optimized_shaders(
     // version is used we will simply fall back to the unoptimized shaders. 
     let target_os = env::var("CARGO_CFG_TARGET_OS").expect("Cargo error");
     let target_env = env::var("CARGO_CFG_TARGET_ENV").expect("Cargo error");
+    #[cfg(feature = "optimized_shaders")]
     let shader_versions = match (target_os.as_str(), target_env.as_str()) {
-        ("android", _) | ("windows", _) | ("linux", "ohos") => [ShaderVersion::Gles],
-        _ => [ShaderVersion::Gl],
+        ("android", _) | ("linux", "ohos") => vec![ShaderVersion::Gles],
+        ("windows", _) =>  vec![ShaderVersion::Gles, ShaderVersion::Gl], // ANGLE and native OpenGL
+        _ => vec![ShaderVersion::Gl],
     };
+    #[cfg(not(feature = "optimized_shaders"))]
+    let shader_versions = vec![];
 
     let mut shaders = Vec::default();
     for &gl_version in &shader_versions {
