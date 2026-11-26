@@ -12,6 +12,7 @@ use std::path::{Component, Path, PathBuf};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 use webrender_build::shader::*;
+#[cfg(feature = "optimized_shaders")]
 use webrender_build::shader_features::{ShaderFeatureFlags, get_shader_features};
 
 // glsopt is known to leak, but we don't particularly care.
@@ -101,6 +102,7 @@ fn write_unoptimized_shaders(
     Ok(())
 }
 
+#[cfg(feature = "optimized_shaders")]
 #[derive(Clone, Debug)]
 struct ShaderOptimizationInput {
     shader_name: &'static str,
@@ -108,6 +110,7 @@ struct ShaderOptimizationInput {
     gl_version: ShaderVersion,
 }
 
+#[cfg(feature = "optimized_shaders")]
 #[derive(Debug)]
 struct ShaderOptimizationOutput {
     full_shader_name: String,
@@ -117,6 +120,7 @@ struct ShaderOptimizationOutput {
     digest: ProgramSourceDigest,
 }
 
+#[cfg(feature = "optimized_shaders")]
 #[derive(Debug)]
 struct ShaderOptimizationError {
     shader: ShaderOptimizationInput,
@@ -127,13 +131,14 @@ struct ShaderOptimizationError {
 /// shaders that are used in place of glslopt's output, so that other shader
 /// toolchains can be tried out. Each variant is read from
 /// `<shader>[.<feature>+<feature>...].{vert,frag}`.
+#[cfg(feature = "optimized_shaders")]
 fn shader_override_dir() -> Option<PathBuf> {
     println!("cargo:rerun-if-env-changed=WR_SHADER_OVERRIDE_DIR");
     let dir = PathBuf::from(env::var_os("WR_SHADER_OVERRIDE_DIR")?);
     println!("cargo:rerun-if-changed={}", dir.display());
     Some(dir)
 }
-
+#[cfg(feature = "optimized_shaders")]
 fn override_file_stem(shader: &ShaderOptimizationInput) -> String {
     if shader.config.is_empty() {
         shader.shader_name.to_string()
@@ -142,6 +147,19 @@ fn override_file_stem(shader: &ShaderOptimizationInput) -> String {
     }
 }
 
+#[cfg(not(feature = "optimized_shaders"))]
+fn write_optimized_shaders(
+    _: &Path,
+    shader_file: &mut File,
+    _: &str,
+) -> Result<(), std::io::Error> {
+     writeln!(
+        shader_file,
+        "  pub static ref OPTIMIZED_SHADERS: HashMap<(ShaderVersion, &'static str), OptimizedSourceWithDigest> = HashMap::new();"
+    )
+}
+
+#[cfg(feature = "optimized_shaders")]
 fn write_optimized_shaders(
     shader_dir: &Path,
     shader_file: &mut File,
@@ -158,14 +176,11 @@ fn write_optimized_shaders(
     // version is used we will simply fall back to the unoptimized shaders. 
     let target_os = env::var("CARGO_CFG_TARGET_OS").expect("Cargo error");
     let target_env = env::var("CARGO_CFG_TARGET_ENV").expect("Cargo error");
-    #[cfg(feature = "optimized_shaders")]
     let shader_versions = match (target_os.as_str(), target_env.as_str()) {
         ("android", _) | ("linux", "ohos") => vec![ShaderVersion::Gles],
         ("windows", _) =>  vec![ShaderVersion::Gles, ShaderVersion::Gl], // ANGLE and native OpenGL
         _ => vec![ShaderVersion::Gl],
     };
-    #[cfg(not(feature = "optimized_shaders"))]
-    let shader_versions = vec![];
 
     let mut shaders = Vec::default();
     for &gl_version in &shader_versions {
@@ -337,6 +352,7 @@ fn write_optimized_shaders(
     Ok(())
 }
 
+#[cfg(feature = "optimized_shaders")]
 fn write_optimized_shader_file(
     path: &Path,
     source: &str,
