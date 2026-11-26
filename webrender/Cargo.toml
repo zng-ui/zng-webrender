@@ -37,7 +37,6 @@ glslopt = "0.1.14"
 webrender_build = { workspace = true }
 
 [dependencies]
-bincode = "1.0"
 bitflags = { version = "2", features = ["serde"] }
 byteorder = "1.0"
 euclid = { version = "0.22.10", features = ["serde"] }

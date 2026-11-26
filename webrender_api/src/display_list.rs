@@ -543,7 +543,7 @@ impl BuiltDisplayList {
         let delta = if payload.interner_delta.is_empty() {
             DlDelta::default()
         } else {
-            bincode::deserialize(&payload.interner_delta)
+            postcard::from_bytes(&payload.interner_delta)
                 .expect("corrupt display list interner delta")
         };
 
@@ -564,7 +564,7 @@ impl BuiltDisplayList {
     /// tell an idle build from a lost one. Dropping it would make the next
     /// non-empty delta look out of sequence.
     pub fn into_data(mut self) -> (DisplayListPayload, BuiltDisplayListDescriptor) {
-        self.payload.interner_delta = bincode::serialize(&self.delta)
+        self.payload.interner_delta = postcard::to_allocvec(&self.delta)
             .expect("failed to encode display list interner delta");
 
         (self.payload, self.descriptor)

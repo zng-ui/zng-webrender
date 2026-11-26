@@ -210,7 +210,6 @@ pub mod shader_source {
     include!(concat!(env!("OUT_DIR"), "/shaders.rs"));
 }
 
-extern crate bincode;
 extern crate byteorder;
 pub extern crate euclid;
 extern crate rustc_hash;
